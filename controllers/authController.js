@@ -93,7 +93,7 @@ exports.protect = async (req,res,next) => {
             error:error.message
           })
       }
-      const freshUser = await User.findById(decoded.id)
+      const freshUser = await User.findById(decoded.id).select('+password')
       if (!freshUser) {
         res.status(401).json({
           error:'no user belong to this token'

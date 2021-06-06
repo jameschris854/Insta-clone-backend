@@ -1,8 +1,8 @@
 const User = require("../models/userModel");
 
-exports.getAllUser = async(req, res, next) => {
+exports.getAllUser = async (req, res, next) => {
   console.log("getting user");
-  let doc = {}
+  let doc = {};
   try {
     doc = await User.find();
   } catch (err) {
@@ -18,9 +18,9 @@ exports.getAllUser = async(req, res, next) => {
 
 exports.createUser = async (req, res, next) => {
   console.log("creating user");
-  let doc = 'null'
-    try {
-     doc = await User.create(req.body);
+  let doc = "null";
+  try {
+    doc = await User.create(req.body);
   } catch (err) {
     doc = err.message;
   }
@@ -34,83 +34,97 @@ exports.createUser = async (req, res, next) => {
   });
 };
 
-exports.getUser = async(req, res, next) => {
-  console.log("getting user",req.params.id);
-  let doc = {}
+exports.getUser = async (req, res, next) => {
+  console.log("getting user", req.params.id);
+  let doc = {};
   try {
-    doc = await User.findById(req.params.id).populate('posts');
+    doc = await User.findById(req.params.id).populate("posts");
   } catch (err) {
     doc = err.message;
   }
   res.status(200).json({
     status: "success",
-      user: doc,
+    user: doc,
   });
 };
 
-exports.deleteUser = async(req,res,next) => {
-  console.log('deleting...');
-  let doc = {}
-  try{
-    doc = await User.findByIdAndDelete(req.user.id)
-  }catch(err){
-    doc = err.message
+exports.deleteUser = async (req, res, next) => {
+  console.log("deleting...");
+  let doc = {};
+  try {
+    doc = await User.findByIdAndDelete(req.user.id);
+  } catch (err) {
+    doc = err.message;
   }
   res.status(204).json({
-    status:"success"
-  })
-}
+    status: "success",
+  });
+};
 
-exports.updateUser = async(req,res,next) => {
-  console.log('updating..');
-  let doc = {}
+exports.updateUser = async (req, res, next) => {
+  console.log("updating..");
+  let doc = {};
   console.log(req.body);
-  try{
-    doc = await User.findByIdAndUpdate(req.user.id,req.body,{new: true,
-      runValidators: true,})
-    
+  try {
+    doc = await User.findByIdAndUpdate(req.user.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
     res.status(200).json({
-      status:"success",
-      doc
-    })
-  }catch(err){
+      status: "success",
+      doc,
+    });
+  } catch (err) {
     res.status(200).json({
-      status:"failure",
-      error:err.message
-    })
+      status: "failure",
+      error: err.message,
+    });
   }
-
-
-}
+};
 
 exports.updatePassword = async (req, res, next) => {
   //1) Get user from collection
-  console.log(req.body)
-  const user = await User.findById(req.user.id).select('+password');
+  console.log(req.body);
+  const user = await User.findById(req.user.id).select("+password");
   //2) check if posted password is correct
   if (!(await user.correctPassword(req.body.currentPassword, user.password))) {
-  //   return next(new AppError('Your current password is wrong', 401));
-  console.log('wrong password');
-  res.status(200).json({
-    status:'failure',
-    error:'password dosent match'
-  })
+    //   return next(new AppError('Your current password is wrong', 401));
+    console.log("wrong password");
+    res.status(200).json({
+      status: "failure",
+      error: "password dosent match",
+    });
   }
   //3) if so ,Update the password
   user.password = req.body.newPassword;
   await user.save();
   //4) log user in,send JWT
   res.status(200).json({
-    status:'success',
-    doc:'password changed successfully'
-  })
+    status: "success",
+    doc: "password changed successfully",
+  });
   next();
 };
 
+exports.deleteMe = async (req, res, next) => {
+  console.log('deleting...');
+  console.log(req.body);
+  console.log('user'+req.user);
+  try {
 
-exports.deleteMe = async(req,res,next) => {
- await User.findByIdAndDelete(req.user.id);
-  res.status(204).json({
-    status:'success'
-  })
-}
+    if (await req.user.correctPassword(req.body.currentPassword, req.user.password)) {
+
+      await User.findByIdAndDelete(req.user.id);
+
+      res.status(200).json({
+        status: "success",
+      });
+    }
+  } catch (error) {
+    res.status(200).json({
+      status: "failure",
+      error: error.message,
+    });
+  }
+};

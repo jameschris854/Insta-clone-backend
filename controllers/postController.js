@@ -55,10 +55,13 @@ exports.getPost = async (req, res, next) => {
 };
 
 exports.deletePost = async (req, res, next) => {
-  console.log("deleting...");
+  console.log("deleting post...");
   let doc = {};
   try {
     doc = await Post.findByIdAndDelete(req.params.id);
+    user = await User.findById(req.user.id);
+    posts = user.posts;
+    posts.filter(post => post.id !== req.params.id);
   } catch (err) {
     doc = err.message;
   }
