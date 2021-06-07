@@ -33,6 +33,9 @@ const userSchema = new mongoose.Schema(
       default: false,
       select: false,
     },
+    passwordResetToken:{type:String},
+    passwordResetExpires:Number,
+    passwordModified:Date,
     posts: [{ type: mongoose.Schema.Types.ObjectId ,ref:'Post'}],
     createdAt: {
       type: Date,
@@ -49,8 +52,11 @@ userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
+  console.log(candidatePassword,userPassword);
   return await bcrypt.compare(candidatePassword, userPassword);
 };
+
+
 
 userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 12);

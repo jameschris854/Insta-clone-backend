@@ -27,7 +27,7 @@ mongoose
 //SERVER
 
 process.on('uncaughtException', err => {
-  console.error('err'+err.message)
+  console.error('err : '+err)
 })
 
 app.listen(process.env.PORT || port,() => {

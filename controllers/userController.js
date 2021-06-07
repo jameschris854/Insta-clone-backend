@@ -91,6 +91,7 @@ exports.updatePassword = async (req, res, next) => {
   if (!(await user.correctPassword(req.body.currentPassword, user.password))) {
     //   return next(new AppError('Your current password is wrong', 401));
     console.log("wrong password");
+
     res.status(200).json({
       status: "failure",
       error: "password dosent match",
@@ -100,10 +101,12 @@ exports.updatePassword = async (req, res, next) => {
   user.password = req.body.newPassword;
   await user.save();
   //4) log user in,send JWT
+
   res.status(200).json({
     status: "success",
     doc: "password changed successfully",
   });
+  
   next();
 };
 
