@@ -2,8 +2,9 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 const bcrypt = require("bcryptjs");
-const crypto = require('crypto')
- 
+const crypto = require("crypto");
+const sendEmail = require("../utils/email");
+
 const signToken = (id) => {
   const token = jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
@@ -113,13 +114,19 @@ exports.forgotPassword = async (req, res, next) => {
   console.log(req.body);
 
   try {
-    const user = await User.findOne({ email: req.body.email }).select('+password');
-    
-    const resetToken = crypto.randomBytes(32).toString('hex');
+    const user = await User.findOne({ email: req.body.email }).select(
+      "+password"
+    );
+    const resetToken = crypto.randomBytes(32).toString("hex");
 
     const passwordResetToken = resetToken;
+    user.passwordResetToken = passwordResetToken;
 
-    user.passwordResetToken = passwordResetToken
+    await sendEmail({
+      email:req.body.email,
+      subject: "insta-clone-Auth",
+      token: passwordResetToken,
+    });
 
     user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
@@ -128,8 +135,8 @@ exports.forgotPassword = async (req, res, next) => {
     console.log(user);
     res.status(400).json({
       status: "fail",
-      user:user.passwordResetToken,
-      expiresIn:user.passwordResetExpires
+      user: user.passwordResetToken,
+      expiresIn: user.passwordResetExpires,
     });
   } catch (error) {
     return res.status(400).json({
@@ -139,29 +146,30 @@ exports.forgotPassword = async (req, res, next) => {
   }
 };
 
-exports.resetPassword = async(req,res,next) => {
-  console.log(req.body)
+exports.resetPassword = async (req, res, next) => {
+  console.log(req.body);
 
-  const user = await User.findOne({passwordResetToken:req.body.passwordResetToken}).select('+password')
+  const user = await User.findOne({
+    passwordResetToken: req.body.passwordResetToken,
+  }).select("+password");
 
-
-  if(user.passwordResetExpires > Date.now()){
+  if (user.passwordResetExpires > Date.now()) {
     hashedPassword = await bcrypt.hash(req.body.newPassword, 12);
-    console.log(req.body.newPassword,hashedPassword);
-    user.password = req.body.newPassword
-    user.passwordResetToken = undefined
-    user.passwordResetExpires=undefined
-    user.passwordModified = Date.now()
+    console.log(req.body.newPassword, hashedPassword);
+    user.password = req.body.newPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    user.passwordModified = Date.now();
     await user.save();
 
     res.status(200).json({
-      status:'success',
-      user
-    })
-  }else{
-  res.status(200).json({
-    status:'fail',
-    error: 'reset time expired'
-  })
-}
-}
+      status: "success",
+      user,
+    });
+  } else {
+    res.status(200).json({
+      status: "fail",
+      error: "reset time expired",
+    });
+  }
+};
