@@ -112,34 +112,27 @@ exports.protect = async (req, res, next) => {
 
 exports.forgotPassword = async (req, res, next) => {
   console.log(req.body);
-
   try {
     const user = await User.findOne({ email: req.body.email }).select(
       "+password"
     );
     const resetToken = crypto.randomBytes(32).toString("hex");
-
     const passwordResetToken = resetToken;
     user.passwordResetToken = passwordResetToken;
-
     await sendEmail({
       email:req.body.email,
       subject: "insta-clone-Auth",
       token: passwordResetToken,
     });
-
     user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-
     user.save();
-
-    console.log(user);
-    res.status(400).json({
-      status: "fail",
-      user: user.passwordResetToken,
+    res.status(200).json({
+      status: "success",
+      token: user.passwordResetToken,
       expiresIn: user.passwordResetExpires,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(404).json({
       status: "fail",
       error,
     });
@@ -167,7 +160,7 @@ exports.resetPassword = async (req, res, next) => {
       user,
     });
   } else {
-    res.status(200).json({
+    res.status(401).json({
       status: "fail",
       error: "reset time expired",
     });
