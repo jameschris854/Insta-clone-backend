@@ -1,5 +1,6 @@
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
+const AppError = require("../utils/appError");
 
 exports.createPost = async (req, res, next) => {
   //    const [user,postImage,postCaption,createdAt] =  req.body
@@ -20,9 +21,10 @@ exports.createPost = async (req, res, next) => {
     //updating the post array in user collection
     updatedUser = await User.findByIdAndUpdate(req.body.author, { posts });
   } catch (err) {
-    doc = err.message;
+    return(next(new AppError(err.message,404)))
   }
-  res.status(200).json({
+  res.status(201).json({
+    status:'success',
     post:doc
   });
 };
@@ -32,7 +34,7 @@ exports.getAllPosts = async (req, res, next) => {
   try {
     posts = await Post.find().populate("author", "photo userName").sort({ 'createdAt' : -1});
   } catch (err) {
-    posts = err.message;
+    return(next(new AppError(err.message,404)))
   }
   res.status(200).json({
     status: "success",
@@ -46,7 +48,7 @@ exports.getPost = async (req, res, next) => {
   try {
     doc = await Post.findById(req.params.id).populate("author");
   } catch (err) {
-    doc = err.message;
+    return(next(new AppError(err.message,404)))
   }
   res.status(200).json({
     status: "success",
@@ -63,9 +65,9 @@ exports.deletePost = async (req, res, next) => {
     posts = user.posts;
     posts.filter(post => post.id !== req.params.id);
   } catch (err) {
-    doc = err.message;
+    return(next(new AppError(err.message,404)))
   }
-  res.status(201).json({
+  res.status(200).json({
     status: "success",
   });
 };

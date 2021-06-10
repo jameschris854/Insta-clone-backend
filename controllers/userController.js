@@ -6,7 +6,7 @@ exports.getAllUser = async (req, res, next) => {
   try {
     doc = await User.find();
   } catch (err) {
-    doc = err.message;
+    return(next(new AppError(err.message,404)))
   }
   res.status(200).json({
     status: "success",
@@ -22,7 +22,7 @@ exports.createUser = async (req, res, next) => {
   try {
     doc = await User.create(req.body);
   } catch (err) {
-    doc = err.message;
+    return(next(new AppError(err.message,404)))
   }
 
   console.log("creating user");
@@ -40,7 +40,7 @@ exports.getUser = async (req, res, next) => {
   try {
     doc = await User.findById(req.params.id).populate("posts");
   } catch (err) {
-    doc = err.message;
+    return(next(new AppError(err.message,404)))
   }
   res.status(200).json({
     status: "success",
@@ -54,7 +54,7 @@ exports.deleteUser = async (req, res, next) => {
   try {
     doc = await User.findByIdAndDelete(req.user.id);
   } catch (err) {
-    doc = err.message;
+    return(next(new AppError(err.message,404)))
   }
   res.status(204).json({
     status: "success",
@@ -76,10 +76,7 @@ exports.updateUser = async (req, res, next) => {
       doc,
     });
   } catch (err) {
-    res.status(200).json({
-      status: "failure",
-      error: err.message,
-    });
+       return(next(new AppError(err.message,404)))
   }
 };
 
@@ -92,10 +89,8 @@ exports.updatePassword = async (req, res, next) => {
     //   return next(new AppError('Your current password is wrong', 401));
     console.log("wrong password");
 
-    res.status(200).json({
-      status: "failure",
-      error: "password dosent match",
-    });
+    return(next(new AppError('wrong password',404)))
+
   }
   //3) if so ,Update the password
   user.password = req.body.newPassword;
@@ -120,14 +115,11 @@ exports.deleteMe = async (req, res, next) => {
 
       await User.findByIdAndDelete(req.user.id);
 
-      res.status(200).json({
+      res.status(204).json({
         status: "success",
       });
     }
   } catch (error) {
-    res.status(200).json({
-      status: "failure",
-      error: error.message,
-    });
+    return(next(new AppError(err.message,404)))
   }
 };

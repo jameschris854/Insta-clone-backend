@@ -4,6 +4,7 @@ const { promisify } = require("util");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const sendEmail = require("../utils/email");
+const AppError = require("../utils/appError");
 
 const signToken = (id) => {
   const token = jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -27,7 +28,8 @@ const createSendToken = (user, statusCode, res) => {
 exports.signup = async (req, res, next) => {
   console.log("signup");
   console.log(req.body);
-  if (!req.body.userName) return console.log("no body");
+  if (!req.body.userName) return(next(new AppError('data not sufficient',404)))
+
   const { fullName, userName, email, password, photo } = req.body;
 
   const doc = await User.create({
@@ -54,14 +56,9 @@ exports.login = async (req, res, next) => {
     .populate("posts", "id postImage postCaption createdAt");
 
   if (!user || !(await user.correctPassword(password, user.password))) {
-    doc = "incorrect password";
+    return(next(new AppError('incorrect password',404)))
 
     if (!user) doc = "no user";
-
-    res.status(400).json({
-      status: "failure",
-      error: doc,
-    });
   } else {
     createSendToken(user, 200, res);
   }
@@ -84,26 +81,20 @@ exports.protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
     }
     if (!token) {
-      res.status(401).json({
-        error: "User not logged in",
-      });
+      return(next(new AppError('no token found',404)))
     }
     try {
       decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
     } catch (error) {
-      res.status(401).json({
-        error: error.message,
-      });
+      return(next(new AppError(error.message,404)))
     }
     const freshUser = await User.findById(decoded.id).select("+password");
     if (!freshUser) {
-      res.status(401).json({
-        error: "no user belong to this token",
-      });
+      return(next(new AppError('no user found',404)))
     }
     req.user = freshUser;
   } catch (err) {
-    res.status(401).json({
+    res.status(500).json({
       error: err.message,
     });
   }
@@ -132,10 +123,7 @@ exports.forgotPassword = async (req, res, next) => {
       expiresIn: user.passwordResetExpires,
     });
   } catch (error) {
-    return res.status(404).json({
-      status: "fail",
-      error,
-    });
+    return(next(new AppError(error.message?error.message:'something went wrong',404)))
   }
 };
 

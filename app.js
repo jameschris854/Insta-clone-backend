@@ -1,69 +1,37 @@
-const express = require('express')
-const userRouter = require('./Routes/userRoutes')
-const cors = require('cors')
-const postRouter = require('./Routes/postRoutes')
-const app = express()
+const express = require("express");
+const userRouter = require("./Routes/userRoutes");
+const cors = require("cors");
+const postRouter = require("./Routes/postRoutes");
+const app = express();
+const globalErrorHandler = require("./controllers/errorController");
 
-
-app.use(cors())
+app.use(cors());
 
 // app.use(express.json({
 //   type: ['application/json', 'text/plain']
 // }))
 app.use(express.json());
-app.use(express.urlencoded({
-  extended: true
-}));
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 
-app.get('/',(req,res)=>{
-  res.setHeader('Access-Control-Allow-Origin', '*');
-     
-    console.log('hit');
-    res.send('hello world')
-})
+app.get("/", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
+  console.log("hit");
+  res.send("hello world");
+});
 
 //ROUTES
-app.use('/api/v1/users',userRouter)
-app.use('/api/v1/posts',postRouter)
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/posts", postRouter);
 
-app.all('*',(req,res,next)=>{
-    res.send('error 404 page not found')
-})
+app.all("*", (req, res, next) => {
+  next(new AppError(`cant find ${req.originalUrl} on the server`, 404));
+});
 
+app.use(globalErrorHandler);
 
 module.exports = app;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
