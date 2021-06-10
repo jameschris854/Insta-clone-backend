@@ -69,7 +69,7 @@ exports.logout = async (req, res, next) => {
 };
 
 exports.protect = async (req, res, next) => {
-  console.log(req.headers);
+  console.log(req.headers.authorization);
   try {
     console.log("validating request");
     let token;
@@ -81,7 +81,7 @@ exports.protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
     }
     if (!token) {
-      return(next(new AppError('no token found',404)))
+      return(next(new AppError('no auth token',404)))
     }
     try {
       decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);

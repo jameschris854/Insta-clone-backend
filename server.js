@@ -5,7 +5,6 @@ const port = 3000
 
 dotenv.config({ path: './config.env' });
 
-
 //DB CONNECT
 
 const DB = process.env.DATABASE.replace(
