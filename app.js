@@ -7,8 +7,12 @@ const globalErrorHandler = require("./controllers/errorController");
 const AppError = require("./utils/appError");
 const path = require('path')
 
-app.use(cors());
-
+app.use(
+  cors({
+    credentials: true,
+    origin: [`${process.env.FRONTEND_URL}`], // here goes Frontend IP
+  })
+);
 app.use(express.static(`${__dirname}/public`));
 
 // app.use(express.json({
