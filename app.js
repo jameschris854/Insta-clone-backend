@@ -7,14 +7,10 @@ const globalErrorHandler = require("./controllers/errorController");
 const AppError = require("./utils/appError");
 const path = require('path')
 
-app.use(
-  cors({
-    credentials: true,
-    origin: [`${process.env.FRONTEND_URL}`], // here goes Frontend IP
-  })
-);
+
 app.use(express.static(`${__dirname}/public`));
 
+app.use(cors());
 // app.use(express.json({
 //   type: ['application/json', 'text/plain']
 // }))
@@ -27,12 +23,12 @@ app.use(
 );
 
 
-app.get("/", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+// app.get("/", (req, res) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
 
-  console.log("hit");
-  res.send("hello world");
-});
+//   console.log("hit");
+//   res.send("hello world");
+// });
 
 
 //ROUTES
