@@ -26,6 +26,7 @@ app.use(express.static(`${__dirname}/public`));
     
     app.use(cors());
     app.options('*', cors());
+
 // app.get("/", (req, res) => {
 //   res.setHeader("Access-Control-Allow-Origin", "*");
 
