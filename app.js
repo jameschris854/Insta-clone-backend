@@ -10,12 +10,8 @@ const path = require('path')
 
 app.use(express.static(`${__dirname}/public`));
 
-app.use(
-  cors({
-    credentials: true,
-    origin: [`${process.env.FRONTEND_URL}`], // here goes Frontend IP
-  })
-);
+app.use(cors());
+app.options('*', cors());
 
 // app.use(cors());
 // app.use(express.json({
