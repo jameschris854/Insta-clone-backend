@@ -10,22 +10,22 @@ const path = require('path')
 
 app.use(express.static(`${__dirname}/public`));
 
-app.use(cors());
-app.options('*', cors());
 
 // app.use(cors());
 // app.use(express.json({
-//   type: ['application/json', 'text/plain']
-// }))
-app.use(express.json());
-
-app.use(
-  express.urlencoded({
-    extended: true,
-  })
-);
-
-
+  //   type: ['application/json', 'text/plain']
+  // }))
+  app.use(express.json());
+  
+  app.use(
+    express.urlencoded({
+      extended: true,
+    })
+    );
+    
+    
+    app.use(cors());
+    app.options('*', cors());
 // app.get("/", (req, res) => {
 //   res.setHeader("Access-Control-Allow-Origin", "*");
 
