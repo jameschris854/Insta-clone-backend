@@ -22,7 +22,7 @@ const multerFilter = (req, file, cb) => {
 
 let upload = multer({ storage: storage, fileFilter: multerFilter });
 
-exports.uploaduserPhoto = upload.single("photo");
+exports.uploadPostPhoto = upload.single("photo");
 
 exports.createPost = async (req, res, next) => {
   //    const [user,postImage,postCaption,createdAt] =  req.body

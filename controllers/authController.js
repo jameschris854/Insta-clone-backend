@@ -31,7 +31,7 @@ exports.signup = async (req, res, next) => {
   if (!req.body.userName) return(next(new AppError('data not sufficient',404)))
 
   const { fullName, userName, email, password, photo } = req.body;
-
+  if(!User.findOne({email})) return next(new AppError('email already exist',400))
   const doc = await User.create({
     userName,
     email,

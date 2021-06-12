@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.use(authController.protect);
 
-router.route("/file").post(postController.uploaduserPhoto,postController.uploadFile);
+router.route("/file").post(postController.uploadPostPhoto,postController.uploadFile);
 
 router
   .route("/")

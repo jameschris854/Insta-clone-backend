@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema(
       default: false,
       select: false,
     },
+    isVerified:{
+      type:Boolean,
+      default:false
+    },
     passwordResetToken:{type:String},
     passwordResetExpires:Number,
     passwordModified:Date,

@@ -1,4 +1,28 @@
 const User = require("../models/userModel");
+const multer = require("multer");
+const AppError = require("../utils/appError");
+
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/img/users");
+  },
+  filename: function (req, file, cb) {
+    cb(null, "user-" + req.user.id + Date.now() + ".jpg");
+  },
+});
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image!,please upload only images.", 400), false);
+  }
+};
+
+let upload = multer({ storage: storage, fileFilter: multerFilter });
+
+exports.uploaduserPhoto = upload.single("photo");
+
 
 exports.getAllUser = async (req, res, next) => {
   console.log("getting user");
@@ -122,4 +146,13 @@ exports.deleteMe = async (req, res, next) => {
   } catch (error) {
     return(next(new AppError(err.message,404)))
   }
+};
+
+exports.uploadProfilePhoto = (req, res, next) => {
+  console.log(req.file);
+
+  res.status(200).json({
+    status: "success",
+    file: req.file.filename,
+  });
 };
