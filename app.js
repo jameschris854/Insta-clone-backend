@@ -39,6 +39,7 @@ app.use(express.static(`${__dirname}/public`));
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/posts", postRouter);
 
+
 app.all("*", (req, res, next) => {
   next(new AppError(`cant find ${req.originalUrl} on the server`, 404));
 });

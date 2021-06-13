@@ -62,7 +62,7 @@ exports.getUser = async (req, res, next) => {
   console.log("getting user", req.params.id);
   let doc = {};
   try {
-    doc = await User.findById(req.params.id).populate("posts");
+    doc = await User.findById(req.params.id).populate("posts")
   } catch (err) {
     return(next(new AppError(err.message,404)))
   }
