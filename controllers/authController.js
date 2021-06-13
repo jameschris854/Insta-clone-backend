@@ -28,21 +28,27 @@ const createSendToken = (user, statusCode, res) => {
 exports.signup = async (req, res, next) => {
   console.log("signup");
   console.log(req.body);
-  if (!req.body.userName) return(next(new AppError('data not sufficient',404)))
+  let doc;
+  if (!req.body.userName) return next(new AppError("data not sufficient", 404));
 
   const { fullName, userName, email, password, photo } = req.body;
-  if(!User.findOne({email})) return next(new AppError('email already exist',400))
-  try{const doc = await User.create({
-    userName,
-    email,
-    password,
-    fullName,
-    photo,
-  });}catch(err){
+  if (!User.findOne({ email }))
+    return next(new AppError("email already exist", 400));
+  try {
+    doc = await User.create({
+      userName,
+      email,
+      password,
+      fullName,
+      photo,
+    });
+    createSendToken(doc, 200, res);
+  } catch (err) {
     console.log(err.name);
-    return next(new AppError(err.message,400))
+    return next(new AppError(err.message, 400));
   }
-  createSendToken(doc, 200, res);
+  console.log(doc);
+  
 };
 
 exports.login = async (req, res, next) => {
@@ -57,12 +63,11 @@ exports.login = async (req, res, next) => {
   const user = await User.findOne({ email })
     .select("+password")
     .populate("posts", "id postImage postCaption createdAt");
-    console.log(user);
-  if(!user) return(next(new AppError('Email has no account',404)))
+  console.log(user);
+  if (!user) return next(new AppError("Email has no account", 404));
 
   if (!(await user.correctPassword(password, user.password))) {
-    return(next(new AppError('incorrect password',404)))
-
+    return next(new AppError("incorrect password", 404));
   } else {
     createSendToken(user, 200, res);
   }
@@ -85,16 +90,16 @@ exports.protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
     }
     if (!token) {
-      return(next(new AppError('no auth token',404)))
+      return next(new AppError("no auth token", 404));
     }
     try {
       decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
     } catch (error) {
-      return(next(new AppError(error.message,404)))
+      return next(new AppError(error.message, 404));
     }
     const freshUser = await User.findById(decoded.id).select("+password");
     if (!freshUser) {
-      return(next(new AppError('no user found',404)))
+      return next(new AppError("no user found", 404));
     }
     req.user = freshUser;
   } catch (err) {
@@ -115,7 +120,7 @@ exports.forgotPassword = async (req, res, next) => {
     const passwordResetToken = resetToken;
     user.passwordResetToken = passwordResetToken;
     await sendEmail({
-      email:req.body.email,
+      email: req.body.email,
       subject: "insta-clone-Auth",
       token: passwordResetToken,
     });
@@ -127,7 +132,9 @@ exports.forgotPassword = async (req, res, next) => {
       expiresIn: user.passwordResetExpires,
     });
   } catch (error) {
-    return(next(new AppError(error.message?error.message:'something went wrong',404)))
+    return next(
+      new AppError(error.message ? error.message : "something went wrong", 404)
+    );
   }
 };
 
