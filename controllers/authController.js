@@ -32,13 +32,16 @@ exports.signup = async (req, res, next) => {
 
   const { fullName, userName, email, password, photo } = req.body;
   if(!User.findOne({email})) return next(new AppError('email already exist',400))
-  const doc = await User.create({
+  try{const doc = await User.create({
     userName,
     email,
     password,
     fullName,
     photo,
-  });
+  });}catch(err){
+    console.log(err.name);
+    return next(new AppError(err.message,400))
+  }
   createSendToken(doc, 200, res);
 };
 
@@ -54,11 +57,11 @@ exports.login = async (req, res, next) => {
   const user = await User.findOne({ email })
     .select("+password")
     .populate("posts", "id postImage postCaption createdAt");
+  if(!user) return(next(new AppError('Email has no account',404)))
 
-  if (!user || !(await user.correctPassword(password, user.password))) {
+  if (!(await user.correctPassword(password, user.password))) {
     return(next(new AppError('incorrect password',404)))
 
-    if (!user) doc = "no user";
   } else {
     createSendToken(user, 200, res);
   }
