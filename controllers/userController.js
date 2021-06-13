@@ -134,17 +134,17 @@ exports.deleteMe = async (req, res, next) => {
   console.log(req.body);
   console.log('user'+req.user);
   try {
-
+    if(!req.body.currentPassword) return(next(new AppError('password field cannot be empty!',400)))
     if (await req.user.correctPassword(req.body.currentPassword, req.user.password)) {
-
       await User.findByIdAndDelete(req.user.id);
-
-      res.status(204).json({
+      res.status(200).json({
         status: "success",
       });
+    }else{
+      return(next(new AppError('Incorrect password',404)))
     }
   } catch (error) {
-    return(next(new AppError(err.message,404)))
+    return(next(new AppError(error.message,404)))
   }
 };
 
