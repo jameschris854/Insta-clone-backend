@@ -1,6 +1,21 @@
 const User = require("../models/userModel");
 const multer = require("multer");
 const AppError = require("../utils/appError");
+const cloudinary = require("cloudinary").v2;
+const sharp = require("sharp");
+
+exports.resizePhoto = (req, res, next) => {
+  console.log(sharp.cache(false))
+  if (!req.file) return next();
+  console.log(req.file);
+  sharp(req.file.path)
+    .resize(500, 500)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+};
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -86,6 +101,16 @@ exports.deleteUser = async (req, res, next) => {
 };
 
 exports.updateUser = async (req, res, next) => {
+  try {
+    let cloudinaryRes = await cloudinary.uploader.upload(
+      "public/img/users/" + req.body.photo,
+      { public_id: `user/${req.body.photo.replace(".jpg", "")}` }
+    );
+    console.log(cloudinaryRes);
+    req.body.photo = cloudinaryRes.url;
+  } catch (e) {
+    return next(new AppError(JSON.stringify(e), 404));
+  }
   console.log("updating..");
   let doc = {};
   console.log(req.body);
@@ -110,7 +135,7 @@ exports.updatePassword = async (req, res, next) => {
   const user = await User.findById(req.user.id).select("+password");
   //2) check if posted password is correct
   if (!(await user.correctPassword(req.body.currentPassword, user.password))) {
-    //   return next(new AppError('Your current password is wrong', 401));
+    //return next(new AppError('Your current password is wrong', 401));
     console.log("wrong password");
 
     return(next(new AppError('wrong password',404)))
